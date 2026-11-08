@@ -5,6 +5,7 @@ const NAV = [
   { key: 'org', label: '조직도' },
   { key: 'site', label: 'PJT별 조직도' },
   { key: 'list', label: '명단 · 현황' },
+  { key: 'emergency', label: '비상연락망' },
   { key: 'admin', label: '관리', admin: true },
 ];
 

@@ -7,8 +7,11 @@ import OrgChart from './components/OrgChart.jsx';
 import SiteChart from './components/SiteChart.jsx';
 import ListView from './components/ListView.jsx';
 import Admin from './components/Admin.jsx';
+import Emergency from './components/Emergency.jsx';
 
-const TABS = ['org', 'site', 'list', 'admin'];
+const TABS = ['org', 'site', 'list', 'emergency', 'admin'];
+// 휴대폰(화면 폭 768px 이하 또는 모바일 기기) → 비상연락망만 표시
+const isPhone = () => { try { return window.matchMedia('(max-width: 768px)').matches || /Android|iPhone|iPod/i.test(navigator.userAgent); } catch { return false; } };
 const tabFromHash = () => { const t = location.hash.replace('#', ''); return TABS.includes(t) ? t : 'org'; };
 
 export default function App() {
@@ -18,6 +21,13 @@ export default function App() {
   const [booting, setBooting] = useState(!!api.getToken());
   const [error, setError] = useState('');
   const [editId, setEditId] = useState(null); // 관리 화면으로 넘길 대상
+  const [phone, setPhone] = useState(isPhone);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const on = () => setPhone(isPhone());
+    mq.addEventListener ? mq.addEventListener('change', on) : mq.addListener(on);
+    return () => (mq.removeEventListener ? mq.removeEventListener('change', on) : mq.removeListener(on));
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -42,19 +52,23 @@ export default function App() {
   if (!user) return <Login onLogin={async (id, pw) => { await api.login(id, pw); await load(); }} />;
   if (!data) return <div className="center-screen">{error || '불러오는 중…'}</div>;
 
+  const logout = () => { api.clearToken(); setUser(null); setData(null); };
+  if (phone) return <Emergency data={data} order={order} user={user} onLogout={logout} />;
+
   const isAdmin = user.role === 'admin';
   const view = tab === 'admin' && !isAdmin ? 'org' : tab;
   const props = { data, order, isAdmin, go, reload: load };
 
   return (
     <div className="app">
-      <Header user={user} tab={view} go={go} onLogout={() => { api.clearToken(); setUser(null); setData(null); }} />
+      <Header user={user} tab={view} go={go} onLogout={logout} />
       {error && <div className="banner error">{error}</div>}
       {api.DEMO && <div className="banner demo">데모 모드 — 서버 미연결 (변경 내용은 새로고침 시 초기화)</div>}
       <main className="main">
         {view === 'org' && <OrgChart {...props} />}
         {view === 'site' && <SiteChart {...props} />}
         {view === 'list' && <ListView {...props} />}
+        {view === 'emergency' && <div className="em-desk"><Emergency data={data} order={order} user={user} onLogout={logout} /></div>}
         {view === 'admin' && <Admin {...props} editId={editId} />}
       </main>
     </div>
