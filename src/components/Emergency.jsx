@@ -27,12 +27,12 @@ function Row({ p }) {
       <span className="em-dot">{p.name.charAt(0)}</span>
       {tel ? (
         <a className="em-info" href={`tel:${tel}`}>
-          <span className="em-name">{p.name} <small>{p.rank}</small>{isLead(p) && <em className="badge lead">팀장</em>}{p.work === '일용' && <em className="badge daily">일용</em>}</span>
+          <span className="em-name">{p.name} <small>{p.rank}</small>{isLead(p) && <em className="badge lead">팀장</em>}</span>
           <span className="em-phone">{p.phone}</span>
         </a>
       ) : (
         <span className="em-info">
-          <span className="em-name">{p.name} <small>{p.rank}</small>{p.work === '일용' && <em className="badge daily">일용</em>}</span>
+          <span className="em-name">{p.name} <small>{p.rank}</small></span>
           <span className="em-phone none">연락처 미등록</span>
         </span>
       )}
