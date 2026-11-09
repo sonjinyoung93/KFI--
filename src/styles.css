@@ -291,6 +291,7 @@ h3 { margin: 0 0 8px; font-size: 17px; }
 .em-group { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .em-ghead { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; font-weight: 700; font-size: 14px; background: var(--soft); color: var(--navy); }
 .em-ghead small { font-weight: 500; font-size: 12px; }
+.em-ghead.safety { background: #FDE8E6; color: #B3261E; }
 .em-ghead.z-SUP { background: #DCE8F8; color: #1F3864; } .em-ghead.z-FAB { background: #D8EFE4; color: #17583A; } .em-ghead.z-공통 { background: #ECECEC; color: #3A3A3A; }
 .em-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px solid #EEF1F5; min-height: 60px; }
 .em-dot { width: 36px; height: 36px; flex-shrink: 0; border-radius: 18px; background: var(--soft); color: var(--navy); display: flex; align-items: center; justify-content: center; font-weight: 700; }

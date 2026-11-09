@@ -67,9 +67,13 @@ export default function Emergency({ data, order, user, onLogout, onDesktop }) {
   if (searching) {
     groups.push({ key: 's', title: `검색 결과 「${q}」`, list: [...rest].sort(sortG), sub: true });
   } else {
+    // 안전은 구역·직무와 상관없이 항상 현장소장 바로 아래
+    const safety = rest.filter(p => p.job === '안전' || p.job === '본사안전').sort(sortG);
+    if (safety.length) groups.push({ key: 'safety', title: site === HQ ? '본사안전' : '안전', list: safety, safety: true });
     const zl = hasZone ? (zone === '전체' ? zones : [zone, '공통'].filter((z, i, a) => zones.includes(z) && a.indexOf(z) === i)) : [null];
     zl.forEach(z => {
       data.codes.jobs.forEach(j => {
+        if (j === '안전' || j === '본사안전') return;
         const list = rest.filter(p => p.job === j && (z === null || p.zone === z || (!p.zone && z === zones[0]))).sort(sortG);
         if (list.length) groups.push({ key: `${z}-${j}`, title: z ? `${z} · ${j}` : j, zone: z, list });
       });
@@ -135,7 +139,7 @@ export default function Emergency({ data, order, user, onLogout, onDesktop }) {
 
         {groups.map(g => (
           <section className="em-group" key={g.key} aria-label={g.title}>
-            <div className={'em-ghead' + (g.zone ? ' z-' + g.zone : '')}><span>{g.title}</span><small>{g.list.length}명</small></div>
+            <div className={'em-ghead' + (g.zone ? ' z-' + g.zone : '') + (g.safety ? ' safety' : '')}><span>{g.title}</span><small>{g.list.length}명</small></div>
             {g.list.map(p => (
               <div key={p.id}>
                 {g.sub && <div className="em-where">{p.pjt}{p.zone ? ` · ${p.zone}` : ''} · {p.job}</div>}
@@ -148,7 +152,7 @@ export default function Emergency({ data, order, user, onLogout, onDesktop }) {
 
         <p className="em-foot">
           · 이름이나 번호를 누르면 전화 앱으로 연결됩니다<br />
-          · 연락 순서: 현장소장 → {hasZone ? '구역 → ' : ''}직무별 팀장 → 팀원<br />
+          · 연락 순서: 현장소장 → 안전 → {hasZone ? '구역 → ' : ''}직무별 팀장 → 팀원<br />
           · 기준: {data.baseDate} · {user.name} 님 로그인
         </p>
       </div>
