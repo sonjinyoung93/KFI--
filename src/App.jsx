@@ -53,7 +53,8 @@ export default function App() {
   if (!data) return <div className="center-screen">{error || '불러오는 중…'}</div>;
 
   const logout = () => { api.clearToken(); setUser(null); setData(null); };
-  if (phone) return <Emergency data={data} order={order} user={user} onLogout={logout} />;
+  // 휴대폰 접속 또는 공용 「비상연락망」 계정 → 비상연락망만 표시
+  if (phone || user.role === 'emergency') return <Emergency data={data} order={order} user={user} onLogout={logout} />;
 
   const isAdmin = user.role === 'admin';
   const view = tab === 'admin' && !isAdmin ? 'org' : tab;

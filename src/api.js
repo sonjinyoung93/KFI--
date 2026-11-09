@@ -51,7 +51,7 @@ export function getPhoto(photoId) {
 }
 
 // ───────────────── 데모 모드 (브라우저 메모리)
-const DEMO_ACCOUNTS = { admin: { pw: 'admin1234', name: '관리자', role: 'admin' }, viewer: { pw: 'viewer1234', name: '열람자', role: 'viewer' } };
+const DEMO_ACCOUNTS = { admin: { pw: 'admin1234', name: '관리자', role: 'admin' }, viewer: { pw: 'viewer1234', name: '열람자', role: 'viewer' }, staff: { pw: 'staff1234', name: '직원 공용', role: 'emergency' } };
 const db = JSON.parse(JSON.stringify(seed));
 const demoPhotos = {};
 let demoUser = null;

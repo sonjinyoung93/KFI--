@@ -13,10 +13,10 @@ const SH = { PEOPLE: '인원', PJT: 'PJT', CODE: '코드', HIST: '이동이력',
 const PEOPLE_COLS = {
   '사번': 'id', '이름': 'name', '직급': 'rank', '직무': 'job', '소속PJT': 'pjt', '근무형태': 'work',
   '재직상태': 'status', '투입일': 'startDate', '연락처': 'phone', '사진ID': 'photoId', '비고': 'note',
-  '수정일': 'updatedAt', '수정자': 'updatedBy', '역할': 'role', '팀장': 'lead'
+  '수정일': 'updatedAt', '수정자': 'updatedBy', '역할': 'role', '팀장': 'lead', '구역': 'zone'
 };
 // 변경 시 이력에 남길 항목
-const TRACKED = { pjt: '소속PJT', job: '직무', rank: '직급', status: '재직상태', role: '역할', lead: '팀장', work: '근무형태' };
+const TRACKED = { pjt: '소속PJT', job: '직무', rank: '직급', status: '재직상태', role: '역할', lead: '팀장', work: '근무형태', zone: '구역' };
 
 // ───────────────────────── 메뉴
 function onOpen() {
@@ -66,6 +66,8 @@ function doPost(e) {
     const user = verify_(req.token);
     if (!user) return json_({ ok: false, error: 'AUTH', message: '로그인이 만료되었습니다' });
     const admin = () => { if (user.role !== 'admin') throw new Error('admin 권한 필요'); };
+    // 공용 「비상연락망」 계정: 비상연락망 조회만 허용
+    if (user.role === 'emergency' && action !== 'bootstrap') return json_({ ok: false, error: '비상연락망 전용 계정입니다' });
     switch (action) {
       case 'bootstrap': return json_(bootstrap_(user));
       case 'photo': return json_(photo_(req.photoId));
@@ -88,7 +90,7 @@ function login_(id, pw) {
   if (!acct || String(acct['사용여부']).trim() !== 'Y') return { ok: false, error: '아이디 또는 비밀번호 확인' };
   if (!acct['비밀번호해시'] || hash_(pw) !== acct['비밀번호해시']) return { ok: false, error: '아이디 또는 비밀번호 확인' };
   const hours = Number(conf_('SESSION_HOURS') || 12);
-  const user = { id: acct['아이디'], name: acct['이름'] || acct['아이디'], role: acct['권한'] === 'admin' ? 'admin' : 'viewer' };
+  const user = { id: acct['아이디'], name: acct['이름'] || acct['아이디'], role: roleOf_(acct['권한']) };
   return { ok: true, token: sign_(Object.assign({ exp: Date.now() + hours * 3600e3 }, user)), user };
 }
 
@@ -135,8 +137,17 @@ function secret_() {
 }
 
 // ───────────────────────── 조회
+function roleOf_(v) {
+  const r = String(v || '').trim();
+  if (r === 'admin') return 'admin';
+  if (r === '비상연락망' || r === 'emergency') return 'emergency';
+  return 'viewer';
+}
+
 function bootstrap_(user) {
-  const people = readPeople_().filter(p => user.role === 'admin' || p.status !== '퇴사');
+  let people = readPeople_().filter(p => user.role === 'admin' || p.status !== '퇴사');
+  // 비상연락망 계정에는 연락에 필요한 항목만 전달 (비고·사진·이력 제외)
+  if (user.role === 'emergency') people = people.map(p => ({ id: p.id, name: p.name, rank: p.rank, job: p.job, pjt: p.pjt, zone: p.zone || '', work: p.work, status: p.status, phone: p.phone, lead: p.lead, role: p.role }));
   const pjts = readTable_(SH.PJT).filter(r => String(r['사용여부'] || 'Y') === 'Y')
     .sort((a, b) => Number(a['표시순서'] || 99) - Number(b['표시순서'] || 99))
     .map(r => ({ code: r['PJT코드'], name: String(r['PJT명']).trim(), client: r['발주처'] || '' }));
@@ -147,7 +158,7 @@ function bootstrap_(user) {
     people, pjts,
     codes: { ranks: col('직급'), jobs: col('직무'), works: col('근무형태'), statuses: col('재직상태'), roles: col('역할') },
     baseDate: conf_('BASE_DATE') || Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd'),
-    history: readHistory_(300)
+    history: user.role === 'emergency' ? [] : readHistory_(300)
   };
 }
 

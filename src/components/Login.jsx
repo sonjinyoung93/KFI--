@@ -30,7 +30,7 @@ export default function Login({ onLogin }) {
         {err && <div className="form-err">{err}</div>}
         <button className="btn primary block" disabled={busy}>{busy ? '확인 중…' : '로그인'}</button>
         <p className="muted small center">계정 발급 · 비밀번호 초기화는 관리자(admin)에게 문의</p>
-        {DEMO && <p className="demo-hint">데모 계정 — admin / admin1234 · viewer / viewer1234</p>}
+        {DEMO && <p className="demo-hint">데모 계정 — admin / admin1234 · viewer / viewer1234 · staff / staff1234 (비상연락망 전용)</p>}
       </form>
     </div>
   );
